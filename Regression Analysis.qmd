@@ -1,0 +1,189 @@
+---
+title: "Regression Analysis in R (Babo Theathers Case Study"
+author: "Mohammad Talha Gulzar"
+date: "September 16, 2024"
+format: html
+editor: source
+self-contained: true
+toc: true
+toc-expand: true
+toc-depth: 3
+---
+
+```{r setup, include=FALSE}
+rm(list = ls()) # clears global environment
+knitr::opts_knit$set(root.dir = setwd("C:/Users/LENOVO/OneDrive - Institute of Business Administration/Desktop/QTM6300"))
+```
+
+# Context
+
+Babo Theatres offer semi-annual movie passes to customers who can watch unlimited movies in their theatres. As the company’s data analyst, I am tasked to evaluate this program to look for sales patterns. In particular, the theatre is interested in creating a model that predicts average sales each time the movie pass customer comes to watch a movie. The average sales variable (avg_spent) includes spending for food and drinks. For the analysis we will use movie_sales.csv along with the data dictionary. Note that the data set contains information for 560 movie pass customers.
+
+
+\
+Importing the data set movie_sales.csv into R. Name this data frame as "movies." 
+
+```{r}
+movies= read.csv('movie_sales.csv')
+```
+
+
+Setting the seed to 28 and separating the file randomly into 55% training and 45% test sets. We should end up with a training data frame called "training" and a testing data set called "test".
+
+```{r}
+set.seed(28)
+N <- nrow(movies)
+trainingSize = round(N*0.55)
+trainingcases <- sample(N, trainingSize)
+training <- movies[trainingcases,]
+test <- movies[-trainingcases,]
+
+```
+
+
+
+How many observations/cases does the training set contain? How many observations/cases does the test set contain?
+
+Answer: The training set contains 308 observation and the test set contains 252 observations.
+
+
+
+Using R, building a linear regression model with the lm() function where the dependent variable ("label" or "target") is the average amount spent (avg_spent) and the independent variables ("features") are number of movies watched (movies_watched), the dummy for ever having bought alcohol (ever_bought_alcohol), percent of total amount bought as drinks (perc_drinks), average movie rating of movies watched (movie_avg_rating), along with the drama, comedy and action dummy variables.
+
+```{r}
+model1 <- lm(avg_spent ~ movies_watched + ever_bought_alcohol + perc_drinks + movie_avg_rating + drama + comedy + action, data= training)
+summary(model1)
+
+```
+
+In the linear regression model, properly interpret the y-intercept.
+
+Answer:19.2 is the predicted value of the dependent variable Y when all independant variable X are equal to zero.
+
+
+In the linear regression model, properly interpret the coefficient for movies watched.
+
+Answer:For each additional movie watched, the predicted value of the dependent variable increases by 0.056825 units, holding all other variables constant.
+
+
+In your linear regression model, properly interpret the coefficient for ever_bought_alcohol. 
+
+Answer: For a person who has ever bought alcohol (ever_bought_alcohol = 1), the predicted value of the dependent variable increases by 2.554470 units compared to a person who has never bought alcohol (ever_bought_alcohol = 0), holding all other variables constant.
+
+
+ 
+ 
+
+Variable(s) that have significant linear relationships with the dependent variable, avg_spent?
+
+Answer: the movie_avg_rating and ever_bought_alcohol are significant varaibles.
+
+
+Using the step() function to use a stepwise function to automatically select the "best" model. We can use our first lm() model from as the starting point.
+
+
+```{r}
+model2 <- step(model1)
+summary(model2)
+```
+
+
+In our stepwise model, what variables ended up staying the final model?
+
+Answer: the variables ever_bought_alcohol, movie_avg_rating, drama ended up staying in the model.
+
+In the resulting model from the stepwise model, how much, on average, does a customer spend per trip to the movie theatre if they have watched 10 movies, never bought alcohol, watched movies with an average rating of 87, and whose favorite category is comedy.
+```{r}
+18.94+(10 * 0.076)+(2.66*0)-(0.136 * 87)
+```
+
+
+
+Using the test set, We can store the predictions from your second model in the "movies" data frame. Here, we can do two thnings:
+
+* Storing the predictions in a stand-alone object called "predictions"
+
+* Storing the predictions in the test data frame.
+
+```{r}
+predictions <- predict(model2, test)
+test$predictions <- predict(model2, test)
+
+```
+
+
+Calculating the MAPE using R code.
+
+```{r}
+# Storing the observed Price values
+observations <- test$avg_spent
+
+# Getting the errors between observed and predictions (so these are "residuals"")
+errors <- observations - predictions
+
+#Calculating the MAPE (Mean Absolute Percentage Error) for the model:
+mape <- mean(abs(observations-predictions)/observations)
+#View the MAPE
+mape
+
+
+
+```
+
+
+
+
+In one sentence, interpreting the MAPE.
+
+Answer: The MAPE is around 0.1335003, which means around 13.35% deviation between predictions and actual observed values on average.
+
+
+
+
+Calculating the RMSE using R code.
+
+```{r}
+#Calculating the Root Mean Square Error (RMSE)
+rmse <- sqrt(mean((observations-predictions)^2))
+
+rmse
+```
+
+
+
+
+In one sentence, interpreting the RMSE.
+
+Answer: This means that if we use the model to predict the Avg spent, we would be about $1.99 off on average.
+
+
+
+With R code, calculating the naive benchmark using the mean as the prediction.
+
+Answer:
+
+
+```{r}
+# Storing the observed values subtracted by average of Avg spent
+errors_bench <- observations - mean(training$avg_spent)
+
+# What is the mape compared to benchmark
+mape_bench <- mean(abs(errors_bench)/observations)
+mape_bench
+# This is about 0.297, or an average deviation of 29.7% when we just naively use the mean of the dependent variable as the benchmark. Our model from before is better than this!
+
+rmse_bench <- sqrt(mean(errors_bench^2))
+rmse_bench
+# This is about 3.62, which is about 3.62 dollars Root Mean Square Error. This means that if we use the mean (instead of the model) to predict the avg spent, we would be about $3.62 off on average.
+```
+
+
+Is our model better than using the mean as the prediction? How do we know?
+
+Answer:
+
+Yes our model is better off as explained in above comments. The MAPE score as mentioned in the mean prediction above has an average deviation of 29.7%, which is worse than our previous prediction.
+
+Also The rmse score is also way above average than as compared to last score which is 3.62 hence proving our model to be effective.
+
+
