@@ -48,14 +48,6 @@ This section explores methods for discovering **hidden structure and patterns** 
 - **Hierarchical Clustering**  
   Agglomerative clustering techniques with dendrogram visualization and cluster interpretation.
 
----
-
-## 📂 Repository Structure
-
-Each folder in the repository corresponds to a specific algorithm or learning method and contains:
-- Quarto (`.qmd`) files with executable code and detailed explanations  
-- Visual outputs for exploratory data analysis and model evaluation  
-- Clear documentation to support learning, experimentation, and reuse  
 
 ---
 
