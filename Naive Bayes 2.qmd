@@ -1,0 +1,215 @@
+---
+title: "Naive Bayes' Homework"
+author: "Talha Gulzar"
+date: "10/08/2024"
+output:
+  rmdformats::readthedown:
+    number_sections: true
+    highlight: tango
+    df_print: paged
+    center: true
+---
+
+```{r setup, include=FALSE}
+rm(list = ls()) # clears global environment
+knitr::opts_knit$set(root.dir = 'C:/Users/LENOVO/OneDrive - Institute of Business Administration/Desktop/QTM6300')
+```
+
+
+# Context
+
+Let’s take a look at the data located in UniversalBank.csv. Each row represents a customer at small but rapidly growing bank. The columns measure all sorts of customer characteristics, ranging from their demographic information (e.g., Age, Family) to whether they currently have various accounts open with the bank (e.g., Securities Account, CD Account). For a complete description of the fields, consult the data page on Canvas.
+
+The bank is aggressively trying to convert customers from depositors into borrowers through its personal loan program. The column **Personal Loan** shows whether each customer responded to a direct marketing campaign related to this program. The marketing team is now trying to understand what types of customers responds to new personal loans marketing. If they can establish reasonably strong predictive power, they will deploy the model more widely across their customer base to identify promising leads and a more nuanced target market.
+
+# Question 1
+
+Do the following:
+
+* Import the data as "bank"
+
+* Any variable that is non-categorical should be nulled out. (Note, you can keep family and education since they are more categorical, but you must change them into factor variables.) You should remove the ID variable nonetheless since this should not add anything to the prediction.
+
+* Convert ALL remaining variables to a factor variable.
+
+
+```{r}
+df <- read.csv('UniversalBank.csv')
+
+# Make every column a factor, since they are all categorical!
+df$ID = NULL
+df$ZIP.Code= NULL
+df$CCAvg = NULL
+df$Mortgage = NULL
+df$Income = NULL
+df$Experience = NULL
+df$Age = NULL
+
+everyColumn = colnames(df)
+df[everyColumn] = lapply(df[everyColumn], factor)
+
+
+```
+
+# Question 2
+* Set a seed of 1234 and partition a training set with 60% of the data.
+
+```{r}
+set.seed(1234)
+N <- nrow(df)
+trainingSize <- round(N*0.6)
+trainingCases <- sample(N, trainingSize)
+training <- df[trainingCases,]
+test <- df[-trainingCases,]
+```
+
+
+# Question 3
+Train the Naive Bayes' model using all available categorical inputs.
+
+```{r}
+#install.packages("e1071")
+library(e1071)
+model <- naiveBayes(Personal.Loan ~ ., data=training)
+```
+
+
+# Question 4
+* Create the confusion matrix to see the errors. 
+
+```{r}
+predictions <- predict(model, test)
+observations <- test$Personal.Loan
+test$predictions <- predict(model, test)
+
+#Confusion Matrix
+table(predictions,observations)
+
+
+```
+
+# Question 5
+How many total predictions did the model get correct? (Not percentage)
+
+Answer:1813
+```{r}
+
+correct_predictions <- 1786 + 27
+correct_predictions
+
+```
+
+
+# Question 6
+How many total predictions did the model get incorrect? (Not percentage)
+
+Answer: 187
+
+```{r}
+correct_predictions <- 1786 + 27
+correct_predictions
+incorrect_predictions <- 169 + 18
+incorrect_predictions
+```
+
+
+
+# Question 7
+Manually calculate the error rate. Show calculations using R as a calculator.
+
+Answer:
+
+```{r}
+total_predictions <- 1786 + 169 + 18 + 27
+error_rate <- incorrect_predictions / total_predictions
+error_rate
+```
+
+
+
+# Question 8
+Now, Calculate the error rate using R code. Make sure your manual calculation is correct.
+
+```{r}
+
+error_rate = sum(predictions != observations)/nrow(test)
+
+error_rate
+```
+
+# Question 9 
+Prior to using R to do so, manually Calculate the BENCHMARK error rate. Show calculations. What is it?
+
+Answer: 
+
+```{r}
+(169+27)/(1786+27+18+169)
+```
+
+
+# Question 10 
+Now use R to calculate the benchmark error rate. Make sure your calculation is the same.
+
+```{r}
+source("BabsonAnalytics.R")
+error_bench = benchmarkErrorRate(training$Personal.Loan, test$Personal.Loan)
+error_bench
+```
+
+
+# Question 11
+Is your error rate for the model better than the benchmark? Is your model useful? Even though the model's error rate is lower than the benchmark, why should we be cautious?
+
+Answer: The error rate of the model is 0.0935 and the benchmark error rate is 0.098, thus the error rate of model is lower than benchmark error rate, indicating that the model is useful.
+
+
+# Question 12
+Ignore the model for a moment and purely use your "bank" data frame: What is the probability that a personal has education level 3 in your data frame? (This means that they have an advanced academic degree.)
+
+Answer: 30.02 % is the probability of education being level 3 in the dataframe.
+
+```{r}
+sum(df$Education == '3')/nrow(df)
+```
+
+
+# Question 13
+Challenge Question: Ignore your model again. What is the probability a customer will have education level 3 given they responded positively to the personal loan marketing campaign.
+
+Answer: : 42.71 % of people had education level 3 given that the responded positively to personal loan
+
+```{r}
+
+sum(df$Education == '3' & df$Personal.Loan == '1')/sum(df$Personal.Loan == '1')
+```
+
+
+# Question 14
+Comment on the connection between the two previous answers. What might this be telling us about what types of customers respond to personal loan advertisements?
+
+Answer:  This discrepancy suggests that individuals with education levels (level 3) may be more likely to respond positively to personal loan advertisements although their total percentage of persons is only 30 percent. One possible reason is that higher-educated customers might be more financially informed and confident in managing loans or more open to opportunities for credit or investment. It could also imply that loan offers are particularly appealing or accessible to this demographic, who may see loans as a tool for furthering financial goals or investment opportunities.
+
+
+# Question 15
+Run the following code given to you. 
+
+What is this code doing? What does the output represent? 
+
+Answer: This code is calculating odds of Personal.Loan=1 occuring within the training set. The code is summing the values of personal.loan=1 and dividing it by the sum of personal.loan=0 to obtain the odds.
+
+```{r}
+odds<-sum(training$Personal.Loan == "1")/sum(training$Personal.Loan == "0")
+odds
+```
+
+# Question 16
+Run the following code given to you below. Note that the "&" in the code just means "and."
+
+What is this code doing? What does the output represent?
+
+Answer: This code is calculating odds of Personal.Loan=1 happening within the training set provided that the Education is 3. The code is summing the values of personal.loan=1 and dividing it by the sum of personal.loan=0 and the “&” function defines the basis or the criteria that is Education=3 to obtain the odds.
+
+```{r}
+odds <- sum(training$Education == "3" & training$Personal.Loan == "1")/sum(training$Education == "3" & training$Personal.Loan == "0")
+odds
+```
