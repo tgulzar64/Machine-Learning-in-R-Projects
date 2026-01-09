@@ -56,5 +56,12 @@ This section explores methods for discovering **hidden structure and patterns** 
 This repository is intended for:
 - Learning and revising core machine learning concepts  
 - Demonstrating applied machine learning skills using R  
-- Serving as a reference for academic coursework and practical projects  
+- Serving as a reference for academic coursework and practical projects
+  
+## 📄 Copyright & Usage
+
+© 2025 Talha Gulzar. All rights reserved.
+
+This project is shared for **portfolio and educational purposes only**. Unauthorized copying, distribution, or use of this code or analysis is prohibited without explicit permission from the author.
+
 
